@@ -1,0 +1,19 @@
+{
+  "architecture": "YOLOv8n mask detector",
+  "labels": [
+    "Mask",
+    "No mask",
+    "Incorrect mask"
+  ],
+  "image_size": 416,
+  "confidence": 0.25,
+  "nms_iou": 0.45,
+  "preprocessing": "RGB /255, centered letterbox 114",
+  "task": "multi-face-mask-detection",
+  "selection": "Ultralytics best.pt selected using validation fitness; confidence will be selected on validation only",
+  "source": "https://github.com/ultralytics/ultralytics",
+  "pretrained_source": "https://huggingface.co/Ultralytics/YOLOv8",
+  "train_run": "runs/detect/runs_yolo/mask_yolov8n_416",
+  "license": "AGPL-3.0 (Ultralytics)",
+  "confidence_selection": "Highest macro-F1 on 124 validation scenes; no test-based threshold tuning"
+}

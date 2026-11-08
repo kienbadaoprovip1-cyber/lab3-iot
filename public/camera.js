@@ -146,7 +146,8 @@ async function capture() {
   const source = stream ? video : photo;
   const width = stream ? video.videoWidth : photo.width, height = stream ? video.videoHeight : photo.height;
   if (!width || !height) throw new Error('Camera chưa có hình. Chờ vài giây rồi thử lại.');
-  const target = document.createElement('canvas'), scale = Math.min(1, 1280 / Math.max(width, height));
+  // Continuous mode sends smaller frames to cut upload and decode time on the free CPU.
+  const target = document.createElement('canvas'), scale = Math.min(1, (running ? 640 : 1280) / Math.max(width, height));
   target.width = Math.max(1,Math.round(width*scale)); target.height = Math.max(1,Math.round(height*scale));
   target.getContext('2d').drawImage(source,0,0,target.width,target.height);
   for (const quality of [.9,.75,.55,.35]) {
@@ -155,8 +156,7 @@ async function capture() {
   }
   throw new Error('Ảnh vượt 300 KB. Thử ảnh đơn giản hoặc nhỏ hơn.');
 }
-function showResult(frame, result, rows) {
-  canvas.width = frame.width; canvas.height = frame.height; ctx.drawImage(frame,0,0);
+function drawDetections(result) {
   const sx=canvas.width/result.image.width,sy=canvas.height/result.image.height;
   ctx.lineWidth=Math.max(2,canvas.width/400);ctx.font=`600 ${Math.max(10,canvas.width/65)}px Segoe UI, Arial`;
   for(const d of result.detections) {
@@ -168,6 +168,10 @@ function showResult(frame, result, rows) {
     ctx.fillStyle=ctx.strokeStyle;ctx.fillRect(tx,ty,labelWidth,fontHeight);
     ctx.fillStyle='white';ctx.fillText(text,tx+5,ty+fontHeight-4);
   }
+}
+function showResult(frame, result, rows) {
+  // In continuous mode paintLive() owns the canvas, so results only update the overlay data.
+  if(!(running&&stream)){canvas.width=frame.width;canvas.height=frame.height;ctx.drawImage(frame,0,0);drawDetections(result);}
   canvas.hidden=false;$('empty').hidden=true;
   const c=result.counts;
   $('countMask').textContent=c.Mask;$('countNoMask').textContent=c['No mask'];
@@ -220,9 +224,20 @@ async function once() {
   try{await recognize(ticket);}catch(e){if(ticket===generation)message(e.name==='AbortError'?'Yêu cầu quá thời gian, kiểm tra server rồi thử lại.':e.message,true);}
   finally{processing=false;updateControls();}
 }
+function paintLive(ticket) {
+  if(!running||!stream||ticket!==generation)return;
+  if(video.videoWidth&&video.videoHeight){
+    if(canvas.width!==video.videoWidth||canvas.height!==video.videoHeight){canvas.width=video.videoWidth;canvas.height=video.videoHeight;}
+    ctx.drawImage(video,0,0);
+    if(lastResult)drawDetections(lastResult);
+    canvas.hidden=false;$('empty').hidden=true;
+  }
+  requestAnimationFrame(()=>paintLive(ticket));
+}
 async function live() {
   if(processing||running||!stream)return;
-  running=true;const ticket=++generation;updateControls();
+  running=true;const ticket=++generation;lastResult=null;updateControls();
+  paintLive(ticket);
   try {
     while(running&&stream&&ticket===generation){
       const cycleStarted=performance.now();
