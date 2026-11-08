@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: lab3-mask-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: EXECUTION_LOCATION
+        value: cloud
+      - key: MODEL_BACKEND
+        value: yolo
+      - key: ORT_NUM_THREADS
+        value: "1"

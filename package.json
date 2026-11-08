@@ -1,0 +1,17 @@
+{
+  "name": "lab3-render-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node cloud-entry.mjs"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "sharp": "0.34.5",
+    "onnxruntime-node": "1.31.1"
+  }
+}

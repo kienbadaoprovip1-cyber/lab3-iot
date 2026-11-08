@@ -1,0 +1,19 @@
+{
+  "architecture": "YOLOv8s corrected webcam fine-tune (640)",
+  "labels": [
+    "Mask",
+    "No mask",
+    "Incorrect mask"
+  ],
+  "image_size": 640,
+  "confidence": 0.35,
+  "nms_iou": 0.45,
+  "preprocessing": "RGB /255, centered letterbox 114",
+  "task": "multi-face-mask-detection",
+  "selection": "Ultralytics best.pt selected using validation fitness; confidence will be selected on validation only",
+  "source": "https://github.com/ultralytics/ultralytics",
+  "pretrained_source": "https://huggingface.co/Ultralytics/YOLOv8",
+  "train_run": "runs/detect/runs_yolo/mask_yolov8s_webcam_corrected640",
+  "license": "AGPL-3.0 (Ultralytics)",
+  "confidence_selection": "Validation only: retain general macro-F1/recall and hand No-mask recall, then minimize false-safe hand cases, tie-break combined macro-F1"
+}

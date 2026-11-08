@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 3 · Camera khẩu trang</title>
+  <link rel="stylesheet" href="/camera.css">
+  <script src="/camera.js" defer></script>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/">LAB <b>3</b><span>THỊ GIÁC MÁY TÍNH</span></a><span class="tag">Webcam · Ảnh · Nhận diện nhiều người</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">CAMERA KHẨU TRANG</p><h1>Mỗi khuôn mặt,<br>một kết quả riêng.</h1></div><p>Mở webcam máy tính hoặc chọn một ảnh.<br>Hệ thống tìm từng khuôn mặt và hiển thị trạng thái khẩu trang.</p></div>
+    <div class="workspace">
+      <section class="viewer" aria-labelledby="viewerTitle">
+        <div class="section-line"><h2 id="viewerTitle">Ảnh nhận diện</h2><span id="sourceName">Chưa chọn nguồn ảnh</span></div>
+        <div class="stage">
+          <canvas id="resultCanvas" width="960" height="540" hidden aria-label="Ảnh có khung bao và nhãn từng khuôn mặt"></canvas>
+          <div id="empty"><div class="face-mark" aria-hidden="true">＋</div><h3>Sẵn sàng quan sát</h3><p>Mở camera ở bảng bên phải<br>hoặc dùng ảnh mẫu để thử ngay.</p><button id="sampleButton" class="light">Thử ảnh mẫu nhiều người</button></div>
+          <span id="busyBadge" class="busy" hidden>Đang nhận diện…</span>
+        </div>
+        <div class="counts" aria-label="Số khuôn mặt theo trạng thái">
+          <div class="mask"><b id="countMask">—</b><span>Đeo đúng</span></div>
+          <div class="no-mask"><b id="countNoMask">—</b><span>Không đeo</span></div>
+          <div class="incorrect"><b id="countIncorrect">—</b><span>Đeo sai</span></div>
+          <div class="unknown"><b id="countUnknown">—</b><span>Chưa rõ</span></div>
+        </div>
+        <div class="section-line"><h2 id="facesTitle">Kết quả từng khuôn mặt</h2><span id="faceTotal">Chưa có kết quả</span></div>
+        <p class="hint">Số # chỉ dùng trong ảnh hiện tại. Dừng nhận diện để gán nhãn thật cho từng mặt; số đếm không bao gồm mặt bị bỏ sót.</p>
+        <div class="table-wrap"><table><thead><tr><th>Mặt</th><th>Trạng thái</th><th>Tin cậy</th><th>Nhãn thực tế</th></tr></thead><tbody id="faceRows"><tr><td colspan="4" class="empty-row">Kết quả sẽ xuất hiện sau lần nhận diện đầu tiên.</td></tr></tbody></table></div>
+      </section>
+      <aside>
+        <section class="control"><div class="section-line"><h2>Nguồn ảnh</h2><span class="step">01</span></div>
+          <label for="cameraDevice">Camera máy tính</label><select id="cameraDevice"><option value="">Camera mặc định</option></select>
+          <div class="button-row"><button id="openCamera" class="primary">Mở camera</button><button id="closeCamera" disabled>Tắt camera</button></div>
+          <video id="preview" autoplay muted playsinline hidden aria-label="Hình trực tiếp từ webcam"></video>
+          <p id="cameraStatus" class="hint">Trình duyệt sẽ hỏi quyền sử dụng camera. Không thu âm.</p>
+          <div class="divider"><span>hoặc</span></div>
+          <label class="file-button" for="imageFile">Chọn ảnh từ máy tính</label><input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp" class="file-input">
+          <button id="sampleAgain" class="text-button">Dùng ảnh mẫu nhiều người</button>
+        </section>
+        <section class="control"><div class="section-line"><h2>Nhận diện</h2><span class="step">02</span></div>
+          <button id="predictOnce" class="primary full" disabled>Nhận diện 1 ảnh</button>
+          <div class="button-row"><button id="startLive" disabled>Bắt đầu liên tục</button><button id="stopLive" disabled>Dừng nhận diện</button></div>
+          <p id="message" class="message" role="status" aria-live="polite">Đang kiểm tra kết nối…</p>
+          <dl class="timings"><div><dt>Suy luận</dt><dd id="inferenceTime">—</dd></div><div><dt>Gửi – nhận</dt><dd id="roundTripTime">—</dd></div><div><dt>Toàn trình</dt><dd id="totalTime">—</dd></div></dl>
+          <p class="hint">Thời gian toàn trình tính từ khi lấy ảnh webcam hoặc ảnh đã mở đến khi hiển thị kết quả; không gồm thời gian chọn file.</p>
+        </section>
+        <section class="control"><div class="section-line"><h2>Lưu kết quả</h2><span class="step">03</span></div>
+          <button id="saveImage" class="full" disabled>Lưu ảnh có khung bao</button>
+          <div class="button-row"><button id="exportFrames" disabled>CSV thời gian</button><button id="exportFaces" disabled>CSV từng mặt</button></div>
+          <p id="sampleCount" class="hint">Chưa có số đo trong phiên này.</p>
+        </section>
+        <section class="control" aria-labelledby="datasetTitle">
+          <div class="section-line"><h2 id="datasetTitle">Chụp ảnh dữ liệu</h2></div>
+          <label for="datasetLabel">Trạng thái thực tế của bạn</label>
+          <select id="datasetLabel">
+            <option value="no_mask">Không đeo khẩu trang</option>
+            <option value="hand_cover_no_mask">Tay che miệng, không có khẩu trang</option>
+            <option value="mask_correct">Đeo khẩu trang đúng</option>
+            <option value="mask_incorrect">Đeo khẩu trang sai</option>
+          </select>
+          <button id="captureDataset" class="primary full" disabled>Chụp ảnh gốc để huấn luyện</button>
+          <p class="hint">Mở webcam, chọn trạng thái rồi chụp. Ảnh không có khung hay nhãn; tải về máy theo cài đặt trình duyệt, không tự gửi vào bộ huấn luyện. Chỉ chụp một người mỗi ảnh.</p>
+          <p id="datasetStatus" class="hint" role="status" aria-live="polite">Chưa chụp ảnh dữ liệu trong phiên này.</p>
+        </section>
+        <details class="control connection" open><summary>Kết nối xử lý <span id="apiBadge">Đang kiểm tra</span></summary>
+          <label for="apiUrl">Địa chỉ API local hoặc Cloud</label><input id="apiUrl" type="url" placeholder="http://localhost:8090" spellcheck="false">
+          <button id="connectApi">Kiểm tra kết nối</button><p id="apiInfo" class="hint"></p>
+        </details>
+      </aside>
+    </div>
+    <footer><span id="modelArchitecture">LAB 3 / Nhận diện nhiều người</span><p>Độ tin cậy không phải độ chính xác toàn hệ thống. Kết quả có thể sai hoặc bỏ sót, đặc biệt với mặt nhỏ, nghiêng và che khuất.</p></footer>
+  </main>
+</body>
+</html>

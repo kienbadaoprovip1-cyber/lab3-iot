@@ -1,0 +1,525 @@
+{
+  "labels_confirmed_by_user": "All 42 local photos: Incorrect mask",
+  "manifest_sha256": "64df2e98f53310841dea5415efa61a69ec27d3b90d96376b9f067e6a43f7de72",
+  "epochs_completed": 13,
+  "requested_epochs": 15,
+  "learning_rate": 5e-05,
+  "warmup_bias_lr": 0,
+  "warmup_epochs": 1,
+  "device": "RTX 3060 Laptop GPU / CUDA",
+  "training_representatives": [
+    1,
+    2,
+    3,
+    5,
+    19,
+    23,
+    29,
+    36,
+    39
+  ],
+  "copies_each_train_only": 4,
+  "baseline_validation": {
+    "confidence": 0.4,
+    "scenes": 156,
+    "ground_truth_faces": 701,
+    "detected_faces": 645,
+    "matched_faces_iou_50": 605,
+    "correct_box_and_label": 590,
+    "detector_precision": 0.937984496124031,
+    "detector_recall": 0.8630527817403709,
+    "classification_accuracy_on_matched_faces": 0.9752066115702479,
+    "correct_label_precision": 0.9147286821705426,
+    "end_to_end_correct_label_recall": 0.8416547788873039,
+    "accepted_matched": 605,
+    "macro_f1": 0.8032721923756966,
+    "per_class": [
+      {
+        "label": "Mask",
+        "support": 518,
+        "predicted": 480,
+        "precision": 0.9354166666666667,
+        "recall": 0.8667953667953668,
+        "f1": 0.8997995991983969
+      },
+      {
+        "label": "No mask",
+        "support": 160,
+        "predicted": 150,
+        "precision": 0.8533333333333334,
+        "recall": 0.8,
+        "f1": 0.8258064516129033
+      },
+      {
+        "label": "Incorrect mask",
+        "support": 23,
+        "predicted": 15,
+        "precision": 0.8666666666666667,
+        "recall": 0.5652173913043478,
+        "f1": 0.6842105263157895
+      }
+    ],
+    "rows": [
+      "Mask",
+      "No mask",
+      "Incorrect mask"
+    ],
+    "columns": [
+      "Mask",
+      "No mask",
+      "Incorrect mask",
+      "Unknown",
+      "Missed"
+    ],
+    "confusion_matrix": [
+      [
+        449,
+        4,
+        0,
+        0,
+        65
+      ],
+      [
+        1,
+        128,
+        2,
+        0,
+        29
+      ],
+      [
+        5,
+        3,
+        13,
+        0,
+        2
+      ]
+    ],
+    "general": {
+      "scenes": 124,
+      "ground_truth_faces": 669,
+      "detected_faces": 613,
+      "matched_faces_iou_50": 574,
+      "correct_box_and_label": 559,
+      "detector_precision": 0.9363784665579119,
+      "detector_recall": 0.8579970104633782,
+      "classification_accuracy_on_matched_faces": 0.9738675958188153,
+      "correct_label_precision": 0.9119086460032626,
+      "end_to_end_correct_label_recall": 0.8355754857997011,
+      "accepted_matched": 574,
+      "macro_f1": 0.7908760038976826,
+      "per_class": [
+        {
+          "label": "Mask",
+          "support": 518,
+          "predicted": 480,
+          "precision": 0.9354166666666667,
+          "recall": 0.8667953667953668,
+          "f1": 0.8997995991983969
+        },
+        {
+          "label": "No mask",
+          "support": 128,
+          "predicted": 118,
+          "precision": 0.8220338983050848,
+          "recall": 0.7578125,
+          "f1": 0.7886178861788617
+        },
+        {
+          "label": "Incorrect mask",
+          "support": 23,
+          "predicted": 15,
+          "precision": 0.8666666666666667,
+          "recall": 0.5652173913043478,
+          "f1": 0.6842105263157895
+        }
+      ],
+      "rows": [
+        "Mask",
+        "No mask",
+        "Incorrect mask"
+      ],
+      "columns": [
+        "Mask",
+        "No mask",
+        "Incorrect mask",
+        "Unknown",
+        "Missed"
+      ],
+      "confusion_matrix": [
+        [
+          449,
+          4,
+          0,
+          0,
+          65
+        ],
+        [
+          1,
+          97,
+          2,
+          0,
+          28
+        ],
+        [
+          5,
+          3,
+          13,
+          0,
+          2
+        ]
+      ]
+    },
+    "hand": {
+      "images": 32,
+      "false_safe_images": 0,
+      "false_any_mask_images": 0,
+      "correct_no_mask_only_images": 31,
+      "no_mask_recall": 0.96875
+    }
+  },
+  "candidate_validation": {
+    "confidence": 0.35,
+    "scenes": 156,
+    "ground_truth_faces": 701,
+    "detected_faces": 657,
+    "matched_faces_iou_50": 611,
+    "correct_box_and_label": 594,
+    "detector_precision": 0.9299847792998478,
+    "detector_recall": 0.8716119828815977,
+    "classification_accuracy_on_matched_faces": 0.972176759410802,
+    "correct_label_precision": 0.9041095890410958,
+    "end_to_end_correct_label_recall": 0.8473609129814551,
+    "accepted_matched": 611,
+    "macro_f1": 0.8041107183734093,
+    "per_class": [
+      {
+        "label": "Mask",
+        "support": 518,
+        "predicted": 485,
+        "precision": 0.9257731958762887,
+        "recall": 0.8667953667953668,
+        "f1": 0.8953140578265204
+      },
+      {
+        "label": "No mask",
+        "support": 160,
+        "predicted": 157,
+        "precision": 0.8407643312101911,
+        "recall": 0.825,
+        "f1": 0.8328075709779179
+      },
+      {
+        "label": "Incorrect mask",
+        "support": 23,
+        "predicted": 15,
+        "precision": 0.8666666666666667,
+        "recall": 0.5652173913043478,
+        "f1": 0.6842105263157895
+      }
+    ],
+    "rows": [
+      "Mask",
+      "No mask",
+      "Incorrect mask"
+    ],
+    "columns": [
+      "Mask",
+      "No mask",
+      "Incorrect mask",
+      "Unknown",
+      "Missed"
+    ],
+    "confusion_matrix": [
+      [
+        449,
+        5,
+        0,
+        0,
+        64
+      ],
+      [
+        2,
+        132,
+        2,
+        0,
+        24
+      ],
+      [
+        5,
+        3,
+        13,
+        0,
+        2
+      ]
+    ],
+    "general": {
+      "scenes": 124,
+      "ground_truth_faces": 669,
+      "detected_faces": 625,
+      "matched_faces_iou_50": 580,
+      "correct_box_and_label": 563,
+      "detector_precision": 0.928,
+      "detector_recall": 0.866965620328849,
+      "classification_accuracy_on_matched_faces": 0.9706896551724138,
+      "correct_label_precision": 0.9008,
+      "end_to_end_correct_label_recall": 0.8415545590433483,
+      "accepted_matched": 580,
+      "macro_f1": 0.7926478521581086,
+      "per_class": [
+        {
+          "label": "Mask",
+          "support": 518,
+          "predicted": 485,
+          "precision": 0.9257731958762887,
+          "recall": 0.8667953667953668,
+          "f1": 0.8953140578265204
+        },
+        {
+          "label": "No mask",
+          "support": 128,
+          "predicted": 125,
+          "precision": 0.808,
+          "recall": 0.7890625,
+          "f1": 0.7984189723320159
+        },
+        {
+          "label": "Incorrect mask",
+          "support": 23,
+          "predicted": 15,
+          "precision": 0.8666666666666667,
+          "recall": 0.5652173913043478,
+          "f1": 0.6842105263157895
+        }
+      ],
+      "rows": [
+        "Mask",
+        "No mask",
+        "Incorrect mask"
+      ],
+      "columns": [
+        "Mask",
+        "No mask",
+        "Incorrect mask",
+        "Unknown",
+        "Missed"
+      ],
+      "confusion_matrix": [
+        [
+          449,
+          5,
+          0,
+          0,
+          64
+        ],
+        [
+          2,
+          101,
+          2,
+          0,
+          23
+        ],
+        [
+          5,
+          3,
+          13,
+          0,
+          2
+        ]
+      ]
+    },
+    "hand": {
+      "images": 32,
+      "false_safe_images": 0,
+      "false_any_mask_images": 0,
+      "correct_no_mask_only_images": 31,
+      "no_mask_recall": 0.96875
+    }
+  },
+  "validation_retention_passed": true,
+  "selection": "Validation only: retain general macro-F1/recall and hand No-mask recall, then minimize false-safe hand cases, tie-break combined macro-F1",
+  "deploy": true,
+  "deployment_status": "Approved after validation, public test retention, 11 automated tests and simulated webcam browser check",
+  "no_independent_webcam_test": true,
+  "run": "runs\\detect\\runs_yolo\\mask_yolov8s_webcam_corrected640",
+  "candidate_onnx_sha256": "cdfb55ba30abbdda3ef86c747fb6693fecea546588e0a734f4804b577f92d431",
+  "test_summary": {
+    "architecture": "YOLOv8s corrected webcam fine-tune (640)",
+    "model_id": "021c5436cc9ea41b2a2c041052790be81c9f8e851e6b652ccb192eef5925783c",
+    "execution_location": "local",
+    "scenes": 164,
+    "ground_truth_faces": 707,
+    "detected_faces": 673,
+    "matched_faces_iou_50": 628,
+    "correct_box_and_label": 612,
+    "detector_precision": 0.9331352154531947,
+    "detector_recall": 0.8882602545968883,
+    "classification_accuracy_on_matched_faces": 0.9745222929936306,
+    "correct_label_precision": 0.9093610698365527,
+    "end_to_end_correct_label_recall": 0.8656294200848657,
+    "accepted_matched": 628,
+    "macro_f1": 0.7464981569246971,
+    "per_class": [
+      {
+        "label": "Mask",
+        "support": 537,
+        "predicted": 518,
+        "precision": 0.9227799227799228,
+        "recall": 0.8901303538175046,
+        "f1": 0.9061611374407583
+      },
+      {
+        "label": "No mask",
+        "support": 156,
+        "predicted": 144,
+        "precision": 0.8888888888888888,
+        "recall": 0.8205128205128205,
+        "f1": 0.8533333333333333
+      },
+      {
+        "label": "Incorrect mask",
+        "support": 14,
+        "predicted": 11,
+        "precision": 0.5454545454545454,
+        "recall": 0.42857142857142855,
+        "f1": 0.4799999999999999
+      }
+    ],
+    "rows": [
+      "Mask",
+      "No mask",
+      "Incorrect mask"
+    ],
+    "columns": [
+      "Mask",
+      "No mask",
+      "Incorrect mask",
+      "Unknown",
+      "Missed"
+    ],
+    "confusion_matrix": [
+      [
+        478,
+        4,
+        5,
+        0,
+        50
+      ],
+      [
+        0,
+        128,
+        0,
+        0,
+        28
+      ],
+      [
+        6,
+        1,
+        6,
+        0,
+        1
+      ]
+    ],
+    "inference_ms": {
+      "count": 164,
+      "mean": 193.3120420731709,
+      "min": 157.65290000000095,
+      "max": 261.5881999999983,
+      "p95": 236.09860000000117
+    },
+    "preprocess_ms": {
+      "count": 164,
+      "mean": 10.071030487804766,
+      "min": 6.872799999997369,
+      "max": 52.974399999999605,
+      "p95": 15.812399999998888
+    },
+    "note": "Same grouped test as baseline. Metrics include false detections and missed faces. Test has been used in development; confirm generalization on new webcam images.",
+    "general": {
+      "scenes": 126,
+      "ground_truth_faces": 669,
+      "detected_faces": 636,
+      "matched_faces_iou_50": 592,
+      "correct_box_and_label": 576,
+      "detector_precision": 0.9308176100628931,
+      "detector_recall": 0.8849028400597907,
+      "classification_accuracy_on_matched_faces": 0.972972972972973,
+      "correct_label_precision": 0.9056603773584906,
+      "end_to_end_correct_label_recall": 0.8609865470852018,
+      "accepted_matched": 592,
+      "macro_f1": 0.7337267216335577,
+      "per_class": [
+        {
+          "label": "Mask",
+          "support": 537,
+          "predicted": 517,
+          "precision": 0.9245647969052224,
+          "recall": 0.8901303538175046,
+          "f1": 0.907020872865275
+        },
+        {
+          "label": "No mask",
+          "support": 118,
+          "predicted": 108,
+          "precision": 0.8518518518518519,
+          "recall": 0.7796610169491526,
+          "f1": 0.8141592920353983
+        },
+        {
+          "label": "Incorrect mask",
+          "support": 14,
+          "predicted": 11,
+          "precision": 0.5454545454545454,
+          "recall": 0.42857142857142855,
+          "f1": 0.4799999999999999
+        }
+      ],
+      "rows": [
+        "Mask",
+        "No mask",
+        "Incorrect mask"
+      ],
+      "columns": [
+        "Mask",
+        "No mask",
+        "Incorrect mask",
+        "Unknown",
+        "Missed"
+      ],
+      "confusion_matrix": [
+        [
+          478,
+          4,
+          5,
+          0,
+          50
+        ],
+        [
+          0,
+          92,
+          0,
+          0,
+          26
+        ],
+        [
+          6,
+          1,
+          6,
+          0,
+          1
+        ]
+      ]
+    },
+    "hand": {
+      "images": 38,
+      "false_safe_images": 0,
+      "false_any_mask_images": 0,
+      "correct_no_mask_only_images": 36,
+      "no_mask_recall": 0.9473684210526315
+    }
+  },
+  "webcam_diagnostic": "40/42 correct box and label on training capture session; not independent accuracy",
+  "test_metrics": "results/yolo-webcam-corrected-test.json",
+  "threshold_selection": "results/yolo-webcam-corrected-validation.json",
+  "parent_model_id": "ea582733cdd50b10ebc1fd41b35ab482a90e7818ac39022ed829cd87ec9d0d15",
+  "current_model_id": "021c5436cc9ea41b2a2c041052790be81c9f8e851e6b652ccb192eef5925783c"
+}
