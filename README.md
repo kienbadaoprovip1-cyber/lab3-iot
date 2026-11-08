@@ -1,6 +1,6 @@
 # Lab 3 — triển khai Render Free
 
-Đây là gói triển khai riêng. Dockerfile đang dùng YOLOv8s 640 (`model_yolo`). Muốn chạy liên tục nhanh hơn trên CPU miễn phí, đổi `model_yolo` thành `model_yolo_nano` (YOLOv8n 416) ở cả hai dòng COPY và ENV trong Dockerfile. Chỉ có code phục vụ web/API, ONNX và metadata, không có ảnh webcam cá nhân, dataset, firmware hay mật khẩu.
+Đây là gói triển khai riêng. Dockerfile đang dùng YOLOv8n 416 (`model_yolo_nano`) để chạy liên tục trên CPU miễn phí; muốn dùng lại YOLOv8s 640, đổi `model_yolo_nano` thành `model_yolo` ở cả hai dòng COPY và ENV trong Dockerfile. Chỉ có code phục vụ web/API, ONNX và metadata, không có ảnh webcam cá nhân, dataset, firmware hay mật khẩu.
 
 ## Đưa lên Render
 
