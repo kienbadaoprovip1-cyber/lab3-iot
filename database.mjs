@@ -5,14 +5,17 @@ import { resolve, join } from 'node:path';
 let db = null;
 let violationsDir = null;
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1\/?$/, '');
-const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const isSupabaseEnabled = Boolean(SUPABASE_URL && SUPABASE_KEY);
+function getSupabaseConfig() {
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1\/?$/, '');
+  const key = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  return { url, key, enabled: Boolean(url && key) };
+}
 
 export function initDatabase(dbPath = process.env.DB_PATH || 'data/lab3.db') {
-  if (isSupabaseEnabled) {
-    console.log(`[Database] Connected to Supabase Cloud: ${SUPABASE_URL}`);
-    return { type: 'supabase', url: SUPABASE_URL };
+  const sb = getSupabaseConfig();
+  if (sb.enabled) {
+    console.log(`[Database] Connected to Supabase Cloud: ${sb.url}`);
+    return { type: 'supabase', url: sb.url };
   }
 
   try {
@@ -51,20 +54,22 @@ export function initDatabase(dbPath = process.env.DB_PATH || 'data/lab3.db') {
 }
 
 async function uploadToSupabaseStorage(id, imageBuffer) {
+  const sb = getSupabaseConfig();
+  if (!sb.enabled) return null;
   try {
-    const uploadUrl = `${SUPABASE_URL}/storage/v1/object/violations/${id}.jpg`;
+    const uploadUrl = `${sb.url}/storage/v1/object/violations/${id}.jpg`;
     const res = await fetch(uploadUrl, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': sb.key,
+        'Authorization': `Bearer ${sb.key}`,
         'Content-Type': 'image/jpeg',
         'x-upsert': 'true'
       },
       body: imageBuffer
     });
     if (res.ok) {
-      return `${SUPABASE_URL}/storage/v1/object/public/violations/${id}.jpg`;
+      return `${sb.url}/storage/v1/object/public/violations/${id}.jpg`;
     }
     console.error('Supabase storage upload error:', await res.text());
   } catch (e) {
@@ -90,7 +95,8 @@ export async function saveDetection({
   const totalFaces = maskCount + noMaskCount + incorrectCount + unknownCount;
   const hasViolation = (noMaskCount > 0 || incorrectCount > 0) ? 1 : 0;
 
-  if (isSupabaseEnabled) {
+  const sb = getSupabaseConfig();
+  if (sb.enabled) {
     try {
       let imageUrl = null;
       if (hasViolation && imageBuffer && imageBuffer.length) {
@@ -114,16 +120,21 @@ export async function saveDetection({
         detections_json: JSON.stringify(detections)
       };
 
-      await fetch(`${SUPABASE_URL}/rest/v1/detection_logs`, {
+      const resp = await fetch(`${sb.url}/rest/v1/detection_logs`, {
         method: 'POST',
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'apikey': sb.key,
+          'Authorization': `Bearer ${sb.key}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
         body: JSON.stringify(row)
       });
+      if (!resp.ok) {
+        console.error('Supabase insert failed:', resp.status, await resp.text());
+      } else {
+        console.log(`[Supabase] Recorded log ${id} (violation: ${hasViolation})`);
+      }
 
       return { id, hasViolation, imageUrl };
     } catch (err) {
@@ -176,15 +187,16 @@ export async function saveDetection({
 }
 
 export async function getViolations({ limit = 30, offset = 0, violationOnly = true } = {}) {
-  if (isSupabaseEnabled) {
+  const sb = getSupabaseConfig();
+  if (sb.enabled) {
     try {
-      let url = `${SUPABASE_URL}/rest/v1/detection_logs?select=*&order=created_at.desc&limit=${limit}&offset=${offset}`;
+      let url = `${sb.url}/rest/v1/detection_logs?select=*&order=created_at.desc&limit=${limit}&offset=${offset}`;
       if (violationOnly) url += '&has_violation=eq.true';
 
       const res = await fetch(url, {
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'apikey': sb.key,
+          'Authorization': `Bearer ${sb.key}`,
           'Range-Unit': 'items',
           'Prefer': 'count=exact'
         }
@@ -236,12 +248,13 @@ export async function getViolations({ limit = 30, offset = 0, violationOnly = tr
 }
 
 export async function getStats() {
-  if (isSupabaseEnabled) {
+  const sb = getSupabaseConfig();
+  if (sb.enabled) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/detection_logs?select=total_faces,mask_count,no_mask_count,incorrect_count,has_violation,inference_ms,server_ms`, {
+      const res = await fetch(`${sb.url}/rest/v1/detection_logs?select=total_faces,mask_count,no_mask_count,incorrect_count,has_violation,inference_ms,server_ms`, {
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`
+          'apikey': sb.key,
+          'Authorization': `Bearer ${sb.key}`
         }
       });
       const rows = await res.json();
@@ -316,13 +329,14 @@ export async function getStats() {
 }
 
 export async function clearLogs() {
-  if (isSupabaseEnabled) {
+  const sb = getSupabaseConfig();
+  if (sb.enabled) {
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/detection_logs`, {
+      await fetch(`${sb.url}/rest/v1/detection_logs`, {
         method: 'DELETE',
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'apikey': sb.key,
+          'Authorization': `Bearer ${sb.key}`,
           'Prefer': 'return=minimal'
         }
       });

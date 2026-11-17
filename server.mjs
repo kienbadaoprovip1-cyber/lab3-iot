@@ -24,7 +24,8 @@ export function createApp(classifier, options = {}) {
   });
   app.use(express.static(fileURLToPath(new URL('./public/', import.meta.url))));
   app.get('/health', (_req, res) => res.json({ ready: true, labels: classifier.labels,
-    model_id: classifier.modelId, backend: classifier.backend, task: classifier.task || 'image-classification', architecture: classifier.architecture || 'Teachable Machine legacy', execution_location: process.env.EXECUTION_LOCATION || 'local' }));
+    model_id: classifier.modelId, backend: classifier.backend, task: classifier.task || 'image-classification', architecture: classifier.architecture || 'Teachable Machine legacy', execution_location: process.env.EXECUTION_LOCATION || 'local',
+    supabase_configured: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_KEY) }));
   
   // Database API endpoints
   app.get('/api/violations', async (req, res) => {
