@@ -28,6 +28,24 @@
         <div class="section-line"><h2 id="facesTitle">Kết quả từng khuôn mặt</h2><span id="faceTotal">Chưa có kết quả</span></div>
         <p class="hint">Số # chỉ dùng trong ảnh hiện tại. Dừng nhận diện để gán nhãn thật cho từng mặt; số đếm không bao gồm mặt bị bỏ sót.</p>
         <div class="table-wrap"><table><thead><tr><th>Mặt</th><th>Trạng thái</th><th>Tin cậy</th><th>Nhãn thực tế</th></tr></thead><tbody id="faceRows"><tr><td colspan="4" class="empty-row">Kết quả sẽ xuất hiện sau lần nhận diện đầu tiên.</td></tr></tbody></table></div>
+        <div class="section-line" style="border-top: 1px solid var(--line); margin-top: 16px;">
+          <h2 id="dbTitle">Nhật ký vi phạm trong Database (SQLite)</h2>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <button id="refreshDb" class="text-button" style="width:auto; padding:0;">Làm mới</button>
+            <button id="clearDb" class="text-button" style="width:auto; padding:0; color:var(--no);">Xóa nhật ký</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:20px; padding:0 20px 10px; font-size:12px; color:var(--muted);">
+          <span>Tổng quét: <b id="dbScans" style="color:var(--ink);">0</b></span>
+          <span>Vi phạm: <b id="dbViolations" style="color:var(--no);">0</b></span>
+          <span>Tỷ lệ tuân thủ: <b id="dbCompliance" style="color:var(--mask);">100%</b></span>
+        </div>
+        <div class="table-wrap" style="max-height:240px;">
+          <table>
+            <thead><tr><th>Thời gian</th><th>Ảnh vi phạm</th><th>Không đeo</th><th>Đeo sai</th><th>Tổng mặt</th><th>Độ trễ</th></tr></thead>
+            <tbody id="violationRows"><tr><td colspan="6" class="empty-row">Chưa có vi phạm nào được ghi nhận vào Database.</td></tr></tbody>
+          </table>
+        </div>
       </section>
       <aside>
         <section class="control"><div class="section-line"><h2>Nguồn ảnh</h2><span class="step">01</span></div>
@@ -40,9 +58,6 @@
           <button id="sampleAgain" class="text-button">Dùng ảnh mẫu nhiều người</button>
         </section>
         <section class="control"><div class="section-line"><h2>Nhận diện</h2><span class="step">02</span></div>
-          <label for="modelSelect">Model nhận diện</label>
-          <select id="modelSelect"><option value="nano">YOLOv8n · Nano · 416 × 416</option><option value="small">YOLOv8s · Small · 640 × 640</option></select>
-          <p id="modelHint" class="hint">Nano ưu tiên tốc độ; Small cần nhiều tài nguyên hơn. Đổi model sẽ dừng nhận diện, lần chạy đầu cần chờ nạp.</p>
           <button id="predictOnce" class="primary full" disabled>Nhận diện 1 ảnh</button>
           <div class="button-row"><button id="startLive" disabled>Bắt đầu liên tục</button><button id="stopLive" disabled>Dừng nhận diện</button></div>
           <p id="message" class="message" role="status" aria-live="polite">Đang kiểm tra kết nối…</p>

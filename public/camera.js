@@ -9,11 +9,9 @@ let checkedBase = '', health = null, lastResult = null;
 const frameSamples = [], faceSamples = [];
 let datasetCapturing = false, datasetCount = 0;
 $('apiUrl').value = localStorage.getItem('lab3CameraApi') || location.origin;
-if(['nano','small'].includes(localStorage.getItem('lab3CameraModel')))$('modelSelect').value=localStorage.getItem('lab3CameraModel');
 
 function message(text, error = false) { $('message').textContent = text; $('message').classList.toggle('error', error); }
 function updateControls() {
-  $('modelSelect').disabled=!health?.models;
   $('captureDataset').disabled = !stream || datasetCapturing;
   const source = Boolean(stream || photo);
   $('openCamera').disabled = opening;
@@ -54,10 +52,8 @@ async function connect() {
     if (base !== baseUrl()) throw new Error('Địa chỉ API đã thay đổi. Kiểm tra lại kết nối.');
     health = data; checkedBase = base; localStorage.setItem('lab3CameraApi', base);
     $('apiBadge').textContent = data.execution_location === 'cloud' ? 'Cloud' : 'Local';
-    const selected=data.models?.find(m=>m.id===$('modelSelect').value);
-    $('apiInfo').textContent = `${selected?.architecture||data.architecture} · ${data.execution_location === 'cloud' ? 'Xử lý trên Cloud' : 'Xử lý tại server local'}`;
-    $('modelArchitecture').textContent = 'LAB 3 / ' + (selected?.architecture||data.architecture);
-    updateControls();
+    $('apiInfo').textContent = `${data.architecture} · ${data.execution_location === 'cloud' ? 'Xử lý trên Cloud' : 'Xử lý tại server local'}`;
+    $('modelArchitecture').textContent = 'LAB 3 / ' + data.architecture;
     return { base, health: data };
   } catch (e) { $('apiBadge').textContent = 'Chưa kết nối'; $('apiInfo').textContent = 'Kiểm tra server và địa chỉ API.'; throw e; }
 }
@@ -150,8 +146,7 @@ async function capture() {
   const source = stream ? video : photo;
   const width = stream ? video.videoWidth : photo.width, height = stream ? video.videoHeight : photo.height;
   if (!width || !height) throw new Error('Camera chưa có hình. Chờ vài giây rồi thử lại.');
-  // Continuous mode sends smaller frames to cut upload and decode time on the free CPU.
-  const target = document.createElement('canvas'), scale = Math.min(1, (running ? 640 : 1280) / Math.max(width, height));
+  const target = document.createElement('canvas'), scale = Math.min(1, 1280 / Math.max(width, height));
   target.width = Math.max(1,Math.round(width*scale)); target.height = Math.max(1,Math.round(height*scale));
   target.getContext('2d').drawImage(source,0,0,target.width,target.height);
   for (const quality of [.9,.75,.55,.35]) {
@@ -160,7 +155,8 @@ async function capture() {
   }
   throw new Error('Ảnh vượt 300 KB. Thử ảnh đơn giản hoặc nhỏ hơn.');
 }
-function drawDetections(result) {
+function showResult(frame, result, rows) {
+  canvas.width = frame.width; canvas.height = frame.height; ctx.drawImage(frame,0,0);
   const sx=canvas.width/result.image.width,sy=canvas.height/result.image.height;
   ctx.lineWidth=Math.max(2,canvas.width/400);ctx.font=`600 ${Math.max(10,canvas.width/65)}px Segoe UI, Arial`;
   for(const d of result.detections) {
@@ -172,10 +168,6 @@ function drawDetections(result) {
     ctx.fillStyle=ctx.strokeStyle;ctx.fillRect(tx,ty,labelWidth,fontHeight);
     ctx.fillStyle='white';ctx.fillText(text,tx+5,ty+fontHeight-4);
   }
-}
-function showResult(frame, result, rows) {
-  // In continuous mode paintLive() owns the canvas, so results only update the overlay data.
-  if(!(running&&stream)){canvas.width=frame.width;canvas.height=frame.height;ctx.drawImage(frame,0,0);drawDetections(result);}
   canvas.hidden=false;$('empty').hidden=true;
   const c=result.counts;
   $('countMask').textContent=c.Mask;$('countNoMask').textContent=c['No mask'];
@@ -202,22 +194,17 @@ async function recognize(ticket) {
   const t0=performance.now(),source=stream?'webcam':'uploaded_image';
   const {blob,frame}=await capture(),t1=performance.now();
   if(ticket!==generation)return;
-  const requestedModel=info.models?$('modelSelect').value:null;
-  const result=await fetchJson(base+'/predict'+(requestedModel?'?model='+encodeURIComponent(requestedModel):''),{method:'POST',headers:{'Content-Type':'image/jpeg'},body:blob},90000,true);
+  const result=await fetchJson(base+'/predict',{method:'POST',headers:{'Content-Type':'image/jpeg'},body:blob},30000,true);
   const t2=performance.now();
   if(ticket!==generation)return;
-  if(requestedModel&&result.model_key!==requestedModel)throw new Error('API trả kết quả của model khác.');
   if(!Array.isArray(result.detections)||!result.image||!result.counts||!Number.isFinite(result.inference_ms))throw new Error('API trả kết quả không hợp lệ.');
   const timestamp=new Date().toISOString();
   const rows=result.detections.map(d=>({timestamp,source,request_id:result.request_id,model_id:result.model_id,
-    api_url:base,execution_location:result.execution_location,model_key:result.model_key||'',architecture:result.architecture,face_id:d.id,label:d.label,truth:'',probability:d.probability,
+    api_url:base,execution_location:result.execution_location,face_id:d.id,label:d.label,truth:'',probability:d.probability,
     face_score:d.face_score,...d.box}));
   showResult(frame,result,rows);faceSamples.push(...rows);
-  $('modelArchitecture').textContent='LAB 3 / '+result.architecture;
-  $('apiInfo').textContent=result.architecture+' · '+(result.execution_location==='cloud'?'Xử lý trên Cloud':'Xử lý tại server local');
   await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
-  const entry={timestamp,source,session:previewSession,first_request:(result.model_load_ms||0)>0||!frameSamples.some(s=>s.session===previewSession&&s.api_url===base&&s.model_id===result.model_id),
-    model_key:result.model_key||'',architecture:result.architecture,model_load_ms:result.model_load_ms||0,
+  const entry={timestamp,source,session:previewSession,first_request:!frameSamples.some(s=>s.session===previewSession&&s.api_url===base),
     request_id:result.request_id,model_id:result.model_id,api_url:base,execution_location:result.execution_location||info.execution_location,
     face_count:result.face_count,mask_count:result.counts.Mask,no_mask_count:result.counts['No mask'],incorrect_count:result.counts['Incorrect mask'],unknown_count:result.counts.Unknown,
     capture_ms:t1-t0,detector_ms:result.detector_ms,classification_ms:result.classification_ms,preprocess_ms:result.preprocess_ms,
@@ -226,6 +213,7 @@ async function recognize(ticket) {
   $('inferenceTime').textContent=entry.inference_ms.toFixed(1)+' ms';$('roundTripTime').textContent=entry.round_trip_ms.toFixed(1)+' ms';$('totalTime').textContent=entry.end_to_end_ms.toFixed(1)+' ms';
   message(result.face_count?`Đã nhận diện ${result.face_count} khuôn mặt.${result.counts.Unknown?' Có mặt chưa đủ độ tin cậy.':''}`:'Không tìm thấy mặt. Thử đứng gần hơn, nhìn thẳng và tăng ánh sáng.');
   updateControls();
+  loadDatabaseRecords().catch(()=>{});
 }
 async function once() {
   if(processing||running)return;
@@ -233,20 +221,9 @@ async function once() {
   try{await recognize(ticket);}catch(e){if(ticket===generation)message(e.name==='AbortError'?'Yêu cầu quá thời gian, kiểm tra server rồi thử lại.':e.message,true);}
   finally{processing=false;updateControls();}
 }
-function paintLive(ticket) {
-  if(!running||!stream||ticket!==generation)return;
-  if(video.videoWidth&&video.videoHeight){
-    if(canvas.width!==video.videoWidth||canvas.height!==video.videoHeight){canvas.width=video.videoWidth;canvas.height=video.videoHeight;}
-    ctx.drawImage(video,0,0);
-    if(lastResult)drawDetections(lastResult);
-    canvas.hidden=false;$('empty').hidden=true;
-  }
-  requestAnimationFrame(()=>paintLive(ticket));
-}
 async function live() {
   if(processing||running||!stream)return;
-  running=true;const ticket=++generation;lastResult=null;updateControls();
-  paintLive(ticket);
+  running=true;const ticket=++generation;updateControls();
   try {
     while(running&&stream&&ticket===generation){
       const cycleStarted=performance.now();
@@ -287,17 +264,6 @@ function exportCsv(rows,name){
   download(new Blob([csv],{type:'text/csv;charset=utf-8'}),name);
 }
 $('openCamera').onclick=openCamera;$('closeCamera').onclick=()=>closeCamera();
-$('modelSelect').onchange=()=>{
-  stopRecognition();lastResult=null;clearDisplayedResults();
-  const source=stream?video:photo;
-  if(source){ctx.drawImage(source,0,0,canvas.width,canvas.height);}
-  const selected=health?.models?.find(m=>m.id===$('modelSelect').value);
-  localStorage.setItem('lab3CameraModel',$('modelSelect').value);
-  $('modelArchitecture').textContent='LAB 3 / '+(selected?.architecture||$('modelSelect').value);
-  if(selected)$('apiInfo').textContent=selected.architecture+' · '+(health.execution_location==='cloud'?'Xử lý trên Cloud':'Xử lý tại server local');
-  message('Đã chọn '+(selected?.name||$('modelSelect').value)+'. Bấm nhận diện để chạy; lần đầu có thể cần chờ nạp model.');
-  updateControls();
-};
 $('cameraDevice').onchange=()=>{if(stream)openCamera();};
 $('predictOnce').onclick=once;$('startLive').onclick=live;
 $('stopLive').onclick=()=>{stopRecognition();message('Đã dừng nhận diện, giữ ảnh kết quả cuối. Camera vẫn mở; bấm Tắt camera để ngắt.');};
@@ -311,7 +277,84 @@ $('apiUrl').oninput=()=>{stopRecognition();health=null;checkedBase='';$('apiBadg
 $('saveImage').onclick=async()=>{if(lastResult)download(await jpegOf(canvas,.92),'lab3-webcam-result.jpg');};
 $('exportFrames').onclick=()=>exportCsv(frameSamples,'lab3-webcam-measurements.csv');
 $('exportFaces').onclick=()=>exportCsv(faceSamples,'lab3-webcam-faces.csv');
+
+async function loadDatabaseRecords() {
+  try {
+    const base = $('apiUrl').value.trim().replace(/\/+$/, '') || location.origin;
+    const [resStats, resViols] = await Promise.all([
+      fetch(base + '/api/stats').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(base + '/api/violations?limit=15').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    if (resStats && $('dbScans')) {
+      $('dbScans').textContent = resStats.total_scans;
+      $('dbViolations').textContent = resStats.total_violations;
+      $('dbCompliance').textContent = resStats.compliance_rate + '%';
+    }
+    if (resViols && $('violationRows')) {
+      $('violationRows').replaceChildren();
+      if (!resViols.items || !resViols.items.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 6;
+        cell.className = 'empty-row';
+        cell.textContent = 'Chưa có vi phạm nào được ghi nhận vào Database.';
+        row.append(cell);
+        $('violationRows').append(row);
+        return;
+      }
+      for (const item of resViols.items) {
+        const tr = document.createElement('tr');
+        const timeTd = document.createElement('td');
+        const d = new Date(item.created_at);
+        timeTd.textContent = `${d.toLocaleTimeString()} ${d.getDate()}/${d.getMonth()+1}`;
+
+        const imgTd = document.createElement('td');
+        if (item.image_url) {
+          const a = document.createElement('a');
+          a.href = item.image_url;
+          a.target = '_blank';
+          a.textContent = 'Xem ảnh';
+          a.style.color = 'var(--blue)';
+          imgTd.append(a);
+        } else {
+          imgTd.textContent = '—';
+        }
+
+        const noMaskTd = document.createElement('td');
+        noMaskTd.style.color = item.no_mask_count ? 'var(--no)' : 'inherit';
+        noMaskTd.textContent = item.no_mask_count;
+
+        const incTd = document.createElement('td');
+        incTd.style.color = item.incorrect_count ? 'var(--wrong)' : 'inherit';
+        incTd.textContent = item.incorrect_count;
+
+        const totalTd = document.createElement('td');
+        totalTd.textContent = item.total_faces;
+
+        const msTd = document.createElement('td');
+        msTd.textContent = `${item.inference_ms}ms / ${item.server_ms}ms`;
+
+        tr.append(timeTd, imgTd, noMaskTd, incTd, totalTd, msTd);
+        $('violationRows').append(tr);
+      }
+    }
+  } catch (_) {}
+}
+
+if ($('refreshDb')) $('refreshDb').onclick = () => loadDatabaseRecords();
+if ($('clearDb')) $('clearDb').onclick = async () => {
+  if (!confirm('Bạn có chắc muốn xóa sạch toàn bộ nhật ký vi phạm trong Database?')) return;
+  try {
+    const base = $('apiUrl').value.trim().replace(/\/+$/, '') || location.origin;
+    await fetch(base + '/api/violations/clear', { method: 'POST' });
+    await loadDatabaseRecords();
+  } catch (_) {}
+};
+
 addEventListener('pagehide',()=>{generation++;activeRequest?.abort();stream?.getTracks().forEach(t=>t.stop());photo?.close();});
 listCameras().catch(()=>{});
-connect().then(()=>message('Sẵn sàng. Mở camera hoặc chọn ảnh để bắt đầu.')).catch(e=>message('Chưa kết nối được API. Kiểm tra cửa sổ server và địa chỉ API. '+e.message,true));
+connect().then(()=>{
+  message('Sẵn sàng. Mở camera hoặc chọn ảnh để bắt đầu.');
+  loadDatabaseRecords().catch(()=>{});
+}).catch(e=>message('Chưa kết nối được API. Kiểm tra cửa sổ server và địa chỉ API. '+e.message,true));
 updateControls();

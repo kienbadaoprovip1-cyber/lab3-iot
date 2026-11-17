@@ -11,3 +11,7 @@ services:
         value: yolo
       - key: ORT_NUM_THREADS
         value: "1"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
